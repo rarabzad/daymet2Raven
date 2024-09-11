@@ -1,4 +1,3 @@
-```markdown
 # daymet2Raven_nc
 
 The `daymet2Raven_nc` function is designed to process spatial climate data from the Daymet database and prepare it for use in the Raven Hydrological Modelling Framework. It generates a NetCDF file and grid weight information, integrating spatial data from a shapefile with gridded climatic variables.
