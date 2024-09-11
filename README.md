@@ -60,8 +60,7 @@ dir.create("c:/daymet")
 setwd("c:/daymet")
 
 # Load the function
-source("https://raw.githubusercontent.com/rarabzad/daymet2Raven/6a0ca73a002923207edcacc1679508c9464b8be5/daymet2Raven_nc.R")
-
+source("https://raw.githubusercontent.com/rarabzad/daymet2Raven/main/daymet2Raven_nc.R")
 # Download and unzip HRU shapefile
 download.file("https://github.com/rarabzad/RDRS/raw/main/data/hru.zip", "hru.zip")
 unzip("hru.zip")
