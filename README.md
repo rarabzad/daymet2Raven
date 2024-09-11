@@ -52,6 +52,31 @@ Install these packages using:
 install.packages(c("daymetr", "sf", "dplyr", "progress", "ncdf4", "rmapshaper", "lubridate"))
 ```
 
+## Example
+
+```r
+# Create a directory and set it as the working directory
+dir.create("c:/daymet")
+setwd("c:/daymet")
+
+# Load the function
+source("https://raw.githubusercontent.com/rarabzad/daymet2Raven/6a0ca73a002923207edcacc1679508c9464b8be5/daymet2Raven_nc.R")
+
+# Download and unzip HRU shapefile
+download.file("https://github.com/rarabzad/RDRS/raw/main/data/hru.zip", "hru.zip")
+unzip("hru.zip")
+hru_shp_file <- "hru/finalcat_hru_info.shp"
+HRU_ID <- "HRU_ID"
+grid_size <- 0.1
+start_date <- as.Date("2023-01-01")
+end_date <- as.Date("2023-12-31")
+grid_weight_file <- "weights.txt"
+nc_file <- "RavenInput.nc"
+
+# Run the function
+daymet2Raven_nc(hru_shp_file, start_date, end_date, grid_size, HRU_ID, nc_file, grid_weight_file)
+```
+
 ## Author
 
 Rezgar Arabzadeh, Sept 2024
