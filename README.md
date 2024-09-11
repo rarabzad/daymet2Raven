@@ -1,5 +1,3 @@
-I apologize for the misunderstanding. Here is a continuous markdown block without extra separations, incorporating all sections from the README content:
-
 ```markdown
 # daymet2Raven_nc
 
@@ -58,4 +56,3 @@ install.packages(c("daymetr", "sf", "dplyr", "progress", "ncdf4", "rmapshaper", 
 ## Author
 
 Rezgar Arabzadeh, Sept 2024
-```
