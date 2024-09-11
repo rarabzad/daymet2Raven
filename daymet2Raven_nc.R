@@ -80,7 +80,6 @@ daymet2Raven_nc<-function(hru_shp_file,
   ncvar_put(nc, tmax_var, tmax_array)
   ncvar_put(nc, prcp_var, prcp_array)
   ncvar_put(nc, altitude_var, altitude_array)
-  nc_close(nc)
   grid_cells$Cell_ID<-(1:nrow(grid_cells))-1
   grid_cells$layer<-NULL
   grid_hru<-as_Spatial(st_intersection(st_as_sf(grid_cells),hru))
@@ -103,23 +102,39 @@ daymet2Raven_nc<-function(hru_shp_file,
   weights_mat_data<-c(L1,L2,L3,L4,Lweights,Lend)
   writeLines(weights_mat_data,grid_weight_file)
   var_names <- names(nc$var)
-  create_info_block <- function(var_name) {
-    var_info <- nc$var[[var_name]]
-    dim_names <- sapply(var_info$dim, function(d) d$name)
-    info_block <- c(
-      paste0(":GriddedForcing \t\t\t ", var_name),
-      paste0("\t:ForcingType \t\t\t ", "TBD"),
-      paste0("\t:FileNameNC \t\t\t ", "YourNetCDFFileName.nc"),
-      paste0("\t:VarNameNC \t\t\t ", var_name),
-      paste0("\t:DimNamesNC \t\t\t ", paste(dim_names, collapse = ", ")),
-      paste0("\t:ElevationVarNameNC \t\t ", ifelse("altitude" %in% var_names, "altitude", "none")),
-      paste0("\t:RedirectToFile \t\t ", "grid_weights_path"),
-      ":EndGriddedForcing\n"
-    )
-    return(info_block)
+  
+  variableBlocks<-c(":GriddedForcing \t\t\t RavenVarName",
+                    "\t:ForcingType \t\t\t RavenForcingType",
+                    "\t:FileNameNC \t\t\t netcdf_path",
+                    "\t:VarNameNC \t\t\t var_name",
+                    "\t:DimNamesNC \t\t\t dims",
+                    "\t:ElevationVarNameNC \t\t ele_var",
+                    "\t:RedirectToFile \t\t grid_weights_path",
+                    ":EndGriddedForcing\n")
+  vars<-nc$var
+  vars_lookup_infor<-data.frame(var=c("tmin","tmax","prcp"),
+                                GriddedForcing=c("TEMPERATURE","TEMPERATURE","PRECIPITATION"),
+                                RavenForcingType=c("TEMP_MIN","TEMP_MAX","PRECIP"))
+  rvt<-c()
+  for(i in 1:length(vars))
+  {
+    if(names(vars)[i] != "altitude")
+    {
+      variableBlocks_tmp<-variableBlocks
+      variableBlocks_tmp<-gsub("RavenVarName",vars_lookup_infor$GriddedForcing[which(names(vars)[i]==vars_lookup_infor$var)],variableBlocks_tmp)
+      variableBlocks_tmp<-gsub("RavenForcingType",vars_lookup_infor$RavenForcingType[which(names(vars)[i]==vars_lookup_infor$var)],variableBlocks_tmp)
+      variableBlocks_tmp<-gsub("netcdf_path",nc_file,variableBlocks_tmp)
+      variableBlocks_tmp<-gsub("var_name",vars[[i]]$name,variableBlocks_tmp)
+      variableBlocks_tmp<-gsub("ele_var",vars$altitude$name,variableBlocks_tmp)
+      dimNames<-c()
+      for(j in 1:length(vars[[i]]$dim)) dimNames<-c(dimNames,vars[[i]]$dim[[j]]$name)
+      dimNames<-paste(dimNames,collapse = " ")
+      variableBlocks_tmp<-gsub("dims",dimNames,variableBlocks_tmp)
+      rvt<-c(rvt,variableBlocks_tmp)
+    }
   }
-  all_blocks <- unlist(lapply(var_names, create_info_block))
-  writeLines(all_blocks, con = "model.rvt")
+  writeLines(paste(rvt,collapse = "\n"), con = "model.rvt")
   writeLines(text = capture.output(nc),con = "nc_file_content.txt")
+  nc_close(nc)
   cat("Done!")
 }
