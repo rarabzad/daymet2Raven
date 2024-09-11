@@ -49,7 +49,7 @@ To use this function, ensure you have the following R libraries installed:
 Install these packages using:
 
 ```r
-install.packages(c("daymetr", "sf", "dplyr", "progress", "ncdf4", "rmapshaper", "lubridate"))
+install.packages(c("daymetr", "sf", "dplyr", "progress", "ncdf4", "rmapshaper", "lubridate", "raster"))
 ```
 
 ## Example
