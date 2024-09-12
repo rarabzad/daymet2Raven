@@ -178,7 +178,7 @@ daymet2Raven_nc<-function(hru_shp_file,
       text(x=coordinates(r)[,1],y=coordinates(r)[,2],labels=grid_cells$Cell_ID,col="white",cex=0.6)
       legend("topleft",
              legend = c("grid","HRU","centroid"),
-             pch=c(4,4,19,),
+             pch=c(4,4,19),
              col=c("black","lightgrey","red"),
              cex=c(.7,.7,.7),
              bty="n")
