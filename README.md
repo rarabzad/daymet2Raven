@@ -21,6 +21,7 @@ daymet2Raven_nc(hru_shp_file, start_date, end_date, grid_size, HRU_ID="HRU_ID", 
 - **`HRU_ID`**: Column name in the shapefile that contains unique HRU identifiers (default is `"HRU_ID"`).
 - **`nc_file`**: The name of the output NetCDF file (default is `"RavenInput.nc"`).
 - **`grid_weight_file`**: The name of the output file where grid weights will be saved (default is `"weights.txt"`).
+- **`plot`**: logical, whether to plot the grid cells overlied by the `"hru_shp_file"`.
 
 **How It Works:**
 
@@ -45,11 +46,13 @@ To use this function, ensure you have the following R libraries installed:
 - `ncdf4`
 - `rmapshaper`
 - `lubridate`
+- `imputeTS`
+- `raster`
 
 Install these packages using:
 
 ```r
-install.packages(c("daymetr", "sf", "dplyr", "progress", "ncdf4", "rmapshaper", "lubridate", "raster"))
+install.packages(c("daymetr", "sf", "dplyr", "progress", "ncdf4", "rmapshaper", "lubridate", "raster","imputeTS"))
 ```
 
 ## Example
@@ -71,9 +74,10 @@ start_date <- as.Date("2023-01-01")
 end_date <- as.Date("2023-12-31")
 grid_weight_file <- "weights.txt"
 nc_file <- "RavenInput.nc"
+plot<-T
 
 # Run the function
-daymet2Raven_nc(hru_shp_file, start_date, end_date, grid_size, HRU_ID, nc_file, grid_weight_file)
+daymet2Raven_nc(hru_shp_file, start_date, end_date, grid_size, HRU_ID, nc_file, grid_weight_file,plot)
 ```
 
 ## Author
