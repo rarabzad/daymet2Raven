@@ -71,7 +71,7 @@ hru_shp_file <- "hru/finalcat_hru_info.shp"
 HRU_ID <- "HRU_ID"
 grid_size <- 0.1
 start_date <- as.Date("2020-06-01")
-end_date <- as.Date("2022-06-31")
+end_date <- as.Date("2022-06-30")
 grid_weight_file <- "weights.txt"
 nc_file <- "RavenInput.nc"
 plot<-T
