@@ -15,6 +15,7 @@ daymet2Raven_nc<-function(hru_shp_file,
   library(rmapshaper)
   library(lubridate)
   library(imputeTS)
+  library(raster)
   hru <- st_make_valid(st_transform(st_read(hru_shp_file), crs = "+proj=longlat +datum=WGS84 +no_defs +type=crs"))[,HRU_ID]
   boundary <- ms_simplify(st_cast(st_simplify(st_union(hru),dTolerance = sum(area(as_Spatial(hru)))/1e6/20),"POLYGON"),0.99)
   buffered_boundary <- st_buffer(boundary, dist = grid_size*1e5 / 2,singleSide = T)
