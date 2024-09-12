@@ -165,9 +165,8 @@ daymet2Raven_nc<-function(hru_shp_file,
   writeLines(text = capture.output(nc),con = "nc_file_content.txt")
   nc_close(nc)
   st_write(st_as_sf(grid_cells), dsn="grids_polygons.shp",  driver="ESRI Shapefile", delete_layer = TRUE)
-  st_write(st_as_sf(grid_cells), dsn="grids_polygons.json", driver="GeoJSON", delete_layer = TRUE)
-
-  
+  if(file.exists("grids_polygons.json")) file.remove("grids_polygons.json")
+  st_write(st_as_sf(grid_cells), dsn="grids_polygons.json", driver="GeoJSON")
   if(plot)
   {
     pdf(file = "plot.pdf")
