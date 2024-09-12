@@ -4,7 +4,8 @@ daymet2Raven_nc<-function(hru_shp_file,
                           grid_size,
                           HRU_ID="HRU_ID",
                           nc_file="RavenInput.nc",
-                          grid_weight_file="weights.txt")
+                          grid_weight_file="weights.txt",
+                          plot=T)
 {
   library(daymetr)
   library(sf)
@@ -13,6 +14,7 @@ daymet2Raven_nc<-function(hru_shp_file,
   library(ncdf4)
   library(rmapshaper)
   library(lubridate)
+  library(imputeTS)
   hru <- st_make_valid(st_transform(st_read(hru_shp_file), crs = "+proj=longlat +datum=WGS84 +no_defs +type=crs"))[,HRU_ID]
   boundary <- ms_simplify(st_cast(st_simplify(st_union(hru),dTolerance = sum(area(as_Spatial(hru)))/1e6/20),"POLYGON"),0.99)
   buffered_boundary <- st_buffer(boundary, dist = grid_size*1e5 / 2,singleSide = T)
@@ -22,9 +24,7 @@ daymet2Raven_nc<-function(hru_shp_file,
   locations<-as.data.frame(round(coordinates(grid_cells),4))
   colnames(locations)<-c("Longitude","Latitude")
   locations<-locations[order(locations$Latitude,decreasing = T),][order(locations$Longitude),]
-  tmin_list <- list()
-  tmax_list <- list()
-  prcp_list <- list()
+  tmin_list <- tmax_list <- prcp_list <- list()
   altitude_list <- numeric(length = nrow(locations))
   time_list <- NULL
   pb <- progress_bar$new(
@@ -49,13 +49,41 @@ daymet2Raven_nc<-function(hru_shp_file,
     prcp_list[[i]] <- daymet_data$data$prcp..mm.day.
     altitude_list[i] <- daymet_data$altitude
   }
-  time_list<-as.Date(paste0(daymet_data$data$year,"-01-01"))+days(daymet_data$data$yday)
+  
+  dta<-list(tmin_list,tmax_list,prcp_list)
+  tmin_list<-dta[[1]];tmax_list<-dta[[2]];prcp_list<-dta[[3]]
+  
+  time_all<-seq(as.Date(start_date),as.Date(end_date),"day")
+  time_list<-as.Date(paste0(daymet_data$data$year,"-01-01"))+days(daymet_data$data$yday-1)
+  time_list_complete<-seq(as.Date(paste0(range(year(time_list))[1],"-01-01")),as.Date(paste0(range(year(time_list))[2],"-12-31")),"day")
+  missing_leap_days<-which(is.na(match(time_list_complete,time_list)))
+  if(length(missing_leap_days)>0)
+  {
+    for(j in 1:1:nrow(locations))
+    {
+        tmin<-tmin_list[[j]]
+        tmax<-tmax_list[[j]]
+        prcp<-prcp_list[[j]]
+        tmin_tmp<-tmax_tmp<-prcp_tmp<-rep(NA,length(time_list_complete))
+        id<-match(time_list,time_list_complete)
+        tmin_tmp[id]<-tmin
+        tmax_tmp[id]<-tmax
+        prcp_tmp[id]<-prcp
+        id<-match(time_all,time_list_complete)
+        tmin_tmp<-tmin_tmp[id]
+        tmax_tmp<-tmax_tmp[id]
+        prcp_tmp<-prcp_tmp[id]
+        tmin_list[[j]]<-na_ma(tmin_tmp,1)
+        tmax_list[[j]]<-na_ma(tmax_tmp,1)
+        prcp_list[[j]]<-na_ma(prcp_tmp,1)
+      }
+  }
   lat<-unique(locations$Latitude)
   lon<-unique(locations$Longitude)
   num_lats <- length(lat)
   num_lons <- length(lon)
-  num_times <- length(time_list)
-  prcp_array<-tmin_array <-tmax_array<-array(NA,dim = c(num_lats,num_lons,num_times),dimnames = list(lat,lon,time_list))
+  num_times <- length(time_all)
+  prcp_array<-tmin_array <-tmax_array<-array(NA,dim = c(num_lats,num_lons,num_times),dimnames = list(lat,lon,time_all))
   altitude_array<-prcp_array[,,1]
   for(i in 1:length(lon))
   {
@@ -70,10 +98,10 @@ daymet2Raven_nc<-function(hru_shp_file,
   }
   lon_dim  <- ncdim_def("lon", "degrees_east", lon)
   lat_dim  <- ncdim_def("lat", "degrees_north", lat)
-  time_dim <- ncdim_def("time", sprintf("days since %s",time_list[1]), seq_along(time_list))
+  time_dim <- ncdim_def("time", sprintf("days since %s",time_all[1]), seq_along(time_all))
   tmin_var <- ncvar_def("tmin", "degrees_C", list(lat_dim,lon_dim, time_dim), missval = NA)
   tmax_var <- ncvar_def("tmax", "degrees_C", list(lat_dim,lon_dim, time_dim), missval = NA)
-  prcp_var <- ncvar_def("prcp", "mm/day", list(lat_dim,lon_dim , time_dim), missval = NA)
+  prcp_var <- ncvar_def("prcp", "mm", list(lat_dim,lon_dim , time_dim), missval = NA)
   altitude_var <- ncvar_def("altitude", "meters", list(lat_dim, lon_dim), missval = NA)
   nc <- nc_create(nc_file, list(tmin_var, tmax_var, prcp_var, altitude_var))
   ncvar_put(nc, tmin_var, tmin_array)
@@ -102,7 +130,6 @@ daymet2Raven_nc<-function(hru_shp_file,
   weights_mat_data<-c(L1,L2,L3,L4,Lweights,Lend)
   writeLines(weights_mat_data,grid_weight_file)
   var_names <- names(nc$var)
-  
   variableBlocks<-c(":GriddedForcing \t\t\t RavenVarName",
                     "\t:ForcingType \t\t\t RavenForcingType",
                     "\t:FileNameNC \t\t\t netcdf_path",
@@ -136,5 +163,40 @@ daymet2Raven_nc<-function(hru_shp_file,
   writeLines(paste(rvt,collapse = "\n"), con = "model.rvt")
   writeLines(text = capture.output(nc),con = "nc_file_content.txt")
   nc_close(nc)
+  st_write(st_as_sf(grid_cells), dsn="grids_polygons.shp",  driver="ESRI Shapefile", delete_layer = TRUE)
+  st_write(st_as_sf(grid_cells), dsn="grids_polygons.json", driver="GeoJSON", delete_layer = TRUE)
+
+  
+  if(plot)
+  {
+    pdf(file = "plot.pdf")
+    plot(grid_cells,col="lightgrey")
+    if(nrow(grid_cells)<500)
+    {
+      points(rasterToPoints(r)[,1:2],pch=19,cex=0.5,col="red")
+      text(x=coordinates(r)[,1],y=coordinates(r)[,2],labels=grid_cells$Cell_ID,col="white",cex=0.6)
+      legend("topleft",
+             legend = c("grid","HRU","centroid"),
+             pch=c(4,4,19,),
+             col=c("black","lightgrey","red"),
+             cex=c(.7,.7,.7),
+             bty="n")
+    }
+    plot(grid_cells[grid_cells$Cell_ID %in% unique(weight_data[,1]),],add=T,col="darkgrey")
+    plot(hru,col = rgb(0.7, 0.5, 0.5, 0.5), border = "white", lwd = 0.1,add=T)
+    x_range <- par()$usr[1:2]
+    y_range <- par()$usr[3:4]
+    x_scale <- diff(x_range) / 5
+    y_scale <- diff(y_range) / 5
+    ruler_x <- seq(x_range[1], x_range[2], by = x_scale)
+    ruler_y <- seq(y_range[1], y_range[2], by = y_scale)
+    axis(1, at = ruler_x, labels = FALSE, tck = -0.02)
+    axis(2, at = ruler_y, labels = FALSE, tck = -0.02)
+    mtext(round(ruler_x, 1), side = 1, at = ruler_x, line = 1, cex = 0.7,las=2)
+    mtext(round(ruler_y, 1), side = 2, at = ruler_y, line = 1, cex = 0.7,las=2)
+    abline(v=ruler_x,col="green",lty=2)
+    abline(h=ruler_y,col="green",lty=2)
+    dev.off()
+  }
   cat("Done!")
 }
