@@ -9,7 +9,14 @@ The `daymet2Raven_nc` function is designed to process spatial climate data from 
 **Basic Usage:**
 
 ```r
-daymet2Raven_nc(hru_shp_file, start_date, end_date, grid_size, HRU_ID="HRU_ID", nc_file="RavenInput.nc", grid_weight_file="weights.txt")
+daymet2Raven_nc(hru_shp_file,
+                start_date,
+                d_date,
+                grid_size,
+                HRU_ID="HRU_ID",
+                nc_file="RavenInput.nc",
+                grid_weight_file="weights.txt",
+                plot=T)
 ```
 
 **Parameters:**
@@ -52,7 +59,15 @@ To use this function, ensure you have the following R libraries installed:
 Install these packages using:
 
 ```r
-install.packages(c("daymetr", "sf", "dplyr", "progress", "ncdf4", "rmapshaper", "lubridate", "raster","imputeTS"))
+install.packages(c("daymetr",
+                   "sf",
+                   "dplyr",
+                   "progress",
+                   "ncdf4",
+                   "rmapshaper",
+                   "lubridate",
+                   "raster",
+                   "imputeTS"))
 ```
 
 ## Example
@@ -77,7 +92,14 @@ nc_file <- "RavenInput.nc"
 plot<-T
 
 # Run the function
-daymet2Raven_nc(hru_shp_file, start_date, end_date, grid_size, HRU_ID, nc_file, grid_weight_file,plot)
+daymet2Raven_nc(hru_shp_file,
+                start_date,
+                end_date,
+                grid_size,
+                HRU_ID,
+                nc_file,
+                grid_weight_file,
+                plot)
 ```
 
 ## Author
