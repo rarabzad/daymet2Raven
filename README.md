@@ -11,7 +11,7 @@ The `daymet2Raven_nc` function is designed to process spatial climate data from 
 ```r
 daymet2Raven_nc(hru_shp_file,
                 start_date,
-                d_date,
+                end_date,
                 grid_size,
                 HRU_ID="HRU_ID",
                 nc_file="RavenInput.nc",
