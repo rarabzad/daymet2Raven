@@ -13,12 +13,12 @@ daymet2Raven_nc(hru_shp_file,
                 start_date,
                 end_date,
                 grid_size,
-                lat=NULL,
-                lon=NULL,
-                HRU_ID="HRU_ID",
-                nc_file="RavenInput.nc",
-                grid_weight_file="weights.txt",
-                plot=T)
+                lat = NULL,
+                lon = NULL,
+                HRU_ID = "HRU_ID",
+                nc_file = "RavenInput.nc",
+                grid_weight_file = "weights.txt",
+                plot = T)
 ```
 
 **Parameters:**
@@ -96,14 +96,14 @@ nc_file <- "RavenInput.nc"
 plot<-T
 
 # Run the function
-daymet2Raven_nc(hru_shp_file,
-                start_date,
-                end_date,
-                grid_size,
-                HRU_ID,
-                nc_file,
-                grid_weight_file,
-                plot)
+daymet2Raven_nc(hru_shp_file = hru_shp_file,
+                start_date = start_date,
+                end_date = end_date,
+                grid_size = grid_size,
+                HRU_ID = HRU_ID,
+                nc_file = nc_file,
+                grid_weight_file = grid_weight_file,
+                plot = plot)
 ```
 
 ## Author
