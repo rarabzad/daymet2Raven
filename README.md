@@ -28,7 +28,7 @@ daymet2Raven_nc(hru_shp_file,
 - **`end_date`**: The ending date for data retrieval in `YYYY-MM-DD` format.
 - **`grid_size`**: Desired size of the grid cells in decimal degrees.
 - **`lat`**: required when `"grid_size"` has not been provided. A vector of latitude(s) where data are collected.
-- **`lon`**: required when `"grid_size"` has not been provided. A vector of longitude(s) where data are collected
+- **`lon`**: required when `"grid_size"` has not been provided. A vector of longitude(s) where data are collected.
 - **`HRU_ID`**: Column name in the shapefile that contains unique HRU identifiers (default is `"HRU_ID"`).
 - **`nc_file`**: The name of the output NetCDF file (default is `"RavenInput.nc"`).
 - **`grid_weight_file`**: The name of the output file where grid weights will be saved (default is `"weights.txt"`).
