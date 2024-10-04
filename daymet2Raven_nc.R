@@ -1,7 +1,9 @@
 daymet2Raven_nc<-function(hru_shp_file,
                           start_date,
                           end_date,
-                          grid_size,
+                          grid_size=NULL,
+                          lat=NULL,
+                          lon=NULL,
                           HRU_ID="HRU_ID",
                           nc_file="RavenInput.nc",
                           grid_weight_file="weights.txt",
@@ -18,8 +20,32 @@ daymet2Raven_nc<-function(hru_shp_file,
   library(raster)
   hru <- st_make_valid(st_transform(st_read(hru_shp_file), crs = "+proj=longlat +datum=WGS84 +no_defs +type=crs"))[,HRU_ID]
   boundary <- ms_simplify(st_cast(st_simplify(st_union(hru),dTolerance = sum(area(as_Spatial(hru)))/1e6/20),"POLYGON"),0.99)
-  buffered_boundary <- st_buffer(boundary, dist = grid_size*1e5 / 2,singleSide = T)
-  r<-raster(extent(as_Spatial(buffered_boundary)),resolution=grid_size,crs=crs(buffered_boundary))
+  if(!is.null(lat) & !is.null(lon)) grid_size<-c(mean(diff(lon)),mean(diff(lat)))
+  buffered_boundary <- st_buffer(boundary, dist = max(grid_size)*1e5 / 2,singleSide = T)
+  if(!is.null(lat) & !is.null(lon))
+  {
+    xmn<-min(lon)-abs(mean(diff(lon)))/2
+    xmx<-max(lon)+abs(mean(diff(lon)))/2
+    ymn<-min(lat)-abs(mean(diff(lat)))/2
+    ymx<-max(lat)+abs(mean(diff(lat)))/2
+    r<-raster(nrows=length(lat),
+              ncols=length(lon),
+              xmn=xmn,xmx=xmx,ymn=ymn,ymx=ymx,
+              crs=crs(buffered_boundary))
+    raster_extent <- extent(r)
+    shape_extent <- extent(as_Spatial(boundary))
+    if (!all(raster_extent@xmin <= shape_extent@xmin,
+             raster_extent@xmax >= shape_extent@xmax,
+             raster_extent@ymin <= shape_extent@ymin,
+             raster_extent@ymax >= shape_extent@ymax))
+    {
+      stop("The raster does NOT cover the shapefile extent.")
+    }
+  }else{
+    r<-raster(extent(as_Spatial(buffered_boundary)),
+              resolution=grid_size,
+              crs=crs(buffered_boundary))
+  }
   r[]<-rnorm(prod(dim(r)))
   grid_cells<-rasterToPolygons(r)
   locations<-as.data.frame(round(coordinates(grid_cells),4))
@@ -79,8 +105,8 @@ daymet2Raven_nc<-function(hru_shp_file,
         prcp_list[[j]]<-na_ma(prcp_tmp,1)
       }
   }
-  lat<-unique(locations$Latitude)
-  lon<-unique(locations$Longitude)
+  lon<-sort(unique(locations$Longitude),decreasing = F)
+  lat<-sort(unique(locations$Latitude),decreasing = T)
   num_lats <- length(lat)
   num_lons <- length(lon)
   num_times <- length(time_all)
@@ -109,6 +135,7 @@ daymet2Raven_nc<-function(hru_shp_file,
   ncvar_put(nc, tmax_var, tmax_array)
   ncvar_put(nc, prcp_var, prcp_array)
   ncvar_put(nc, altitude_var, altitude_array)
+  grid_cells[as.numeric(rownames(locations)),]
   grid_cells$Cell_ID<-(1:nrow(grid_cells))-1
   grid_cells$layer<-NULL
   grid_hru<-as_Spatial(st_intersection(st_as_sf(grid_cells),hru))
