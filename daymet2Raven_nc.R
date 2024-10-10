@@ -17,6 +17,7 @@ daymet2Raven_nc<-function(hru_shp_file,
   library(lubridate)
   library(imputeTS)
   library(raster)
+  if(!dir.exists(outdir)) dir.create(outdir)
   nc_file<-file.path(outdir,"RavenInput.nc")
   grid_weight_file<-file.path(outdir,"weights.txt")
   plot_file<-file.path(outdir,"plot.pdf")
