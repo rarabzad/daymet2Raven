@@ -5,8 +5,7 @@ daymet2Raven_nc<-function(hru_shp_file,
                           lat=NULL,
                           lon=NULL,
                           HRU_ID="HRU_ID",
-                          nc_file="RavenInput.nc",
-                          grid_weight_file="weights.txt",
+                          outdir = getwd(),
                           plot=T)
 {
   library(daymetr)
@@ -18,6 +17,13 @@ daymet2Raven_nc<-function(hru_shp_file,
   library(lubridate)
   library(imputeTS)
   library(raster)
+  nc_file<-file.path(outdir,"RavenInput.nc")
+  grid_weight_file<-file.path(outdir,"weights.txt")
+  plot_file<-file.path(outdir,"plot.pdf")
+  grid_file<-file.path(outdir,"grids_polygons.shp")
+  grid_file_json<-file.path(outdir,"grids_polygons.json")
+  rvt_file<-file.path(outdir,"model.rvt")
+  nc_content_file<-file.path(outdir,"nc_file_content.txt")
   hru <- st_make_valid(st_transform(st_read(hru_shp_file), crs = "+proj=longlat +datum=WGS84 +no_defs +type=crs"))[,HRU_ID]
   boundary <- ms_simplify(st_cast(st_simplify(st_union(hru),dTolerance = sum(area(as_Spatial(hru)))/1e6/20),"POLYGON"),0.99)
   if(!is.null(lat) & !is.null(lon)) grid_size<-c(mean(diff(lon)),mean(diff(lat)))
@@ -135,17 +141,17 @@ daymet2Raven_nc<-function(hru_shp_file,
   ncvar_put(nc, tmax_var, tmax_array)
   ncvar_put(nc, prcp_var, prcp_array)
   ncvar_put(nc, altitude_var, altitude_array)
-  grid_cells[as.numeric(rownames(locations)),]
+  grid_cells<-grid_cells[as.numeric(rownames(locations)),]
   grid_cells$Cell_ID<-(1:nrow(grid_cells))-1
   grid_cells$layer<-NULL
   grid_hru<-as_Spatial(st_intersection(st_as_sf(grid_cells),hru))
   grid_hru$area<-area(grid_hru)
   weight_data<-grid_hru@data
-  hru_id<-unique(weight_data$HRU_ID)
+  hru_id<- unique(weight_data [,HRU_ID])
   weight_data$weight<-NA
   for(i in 1:length(hru_id))
   {
-    id<-hru_id[i]==weight_data$HRU_ID
+    id<-hru_id[i]==weight_data[,HRU_ID]
     weight_data[id,]$weight<-weight_data[id,]$area/sum(weight_data[id,]$area)
   }
   weight_data$area<-NULL
@@ -188,15 +194,15 @@ daymet2Raven_nc<-function(hru_shp_file,
       rvt<-c(rvt,variableBlocks_tmp)
     }
   }
-  writeLines(paste(rvt,collapse = "\n"), con = "model.rvt")
-  writeLines(text = capture.output(nc),con = "nc_file_content.txt")
+  writeLines(paste(rvt,collapse = "\n"), con = rvt_file)
+  writeLines(text = capture.output(nc),con = nc_content_file)
   nc_close(nc)
-  st_write(st_as_sf(grid_cells), dsn="grids_polygons.shp",  driver="ESRI Shapefile", delete_layer = TRUE)
-  if(file.exists("grids_polygons.json")) file.remove("grids_polygons.json")
-  st_write(st_as_sf(grid_cells), dsn="grids_polygons.json", driver="GeoJSON")
+  st_write(st_as_sf(grid_cells), dsn=grid_file,  driver="ESRI Shapefile", delete_layer = TRUE)
+  if(file.exists(grid_file_json)) file.remove(grid_file_json)
+  st_write(st_as_sf(grid_cells), dsn=grid_file_json, driver="GeoJSON")
   if(plot)
   {
-    pdf(file = "plot.pdf")
+    pdf(file = plot_file)
     plot(grid_cells,col="lightgrey")
     if(nrow(grid_cells)<500)
     {
