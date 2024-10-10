@@ -16,8 +16,7 @@ daymet2Raven_nc(hru_shp_file,
                 lat = NULL,
                 lon = NULL,
                 HRU_ID = "HRU_ID",
-                nc_file = "RavenInput.nc",
-                grid_weight_file = "weights.txt",
+                outdir = getwd(),
                 plot = T)
 ```
 
@@ -30,8 +29,7 @@ daymet2Raven_nc(hru_shp_file,
 - **`lat`**: required when `"grid_size"` has not been provided. A vector of latitude(s) where data are collected.
 - **`lon`**: required when `"grid_size"` has not been provided. A vector of longitude(s) where data are collected.
 - **`HRU_ID`**: Column name in the shapefile that contains unique HRU identifiers (default is `"HRU_ID"`).
-- **`nc_file`**: The name of the output NetCDF file (default is `"RavenInput.nc"`).
-- **`grid_weight_file`**: The name of the output file where grid weights will be saved (default is `"weights.txt"`).
+- **`outdir`**: directory where the output files go there, default is set to the currect directory.
 - **`plot`**: logical, whether to plot the grid cells overlied by the `"hru_shp_file"`.
 
 **How It Works:**
@@ -91,8 +89,6 @@ HRU_ID <- "HRU_ID"
 grid_size <- 0.1
 start_date <- as.Date("2020-06-01")
 end_date <- as.Date("2022-06-30")
-grid_weight_file <- "weights.txt"
-nc_file <- "RavenInput.nc"
 plot<-T
 
 # Run the function
@@ -101,8 +97,6 @@ daymet2Raven_nc(hru_shp_file = hru_shp_file,
                 end_date = end_date,
                 grid_size = grid_size,
                 HRU_ID = HRU_ID,
-                nc_file = nc_file,
-                grid_weight_file = grid_weight_file,
                 plot = plot)
 ```
 
