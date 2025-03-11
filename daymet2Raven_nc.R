@@ -17,6 +17,7 @@ daymet2Raven_nc<-function(hru_shp_file,
   library(lubridate)
   library(imputeTS)
   library(raster)
+  if(!is.null(lat) & !is.null(lon)) grid_size<-c(mean(diff(lon)),mean(diff(lat)))
   if(!dir.exists(outdir)) dir.create(outdir)
   nc_file<-file.path(outdir,"RavenInput.nc")
   grid_weight_file<-file.path(outdir,"weights.txt")
@@ -25,10 +26,20 @@ daymet2Raven_nc<-function(hru_shp_file,
   grid_file_json<-file.path(outdir,"grids_polygons.json")
   rvt_file<-file.path(outdir,"model.rvt")
   nc_content_file<-file.path(outdir,"nc_file_content.txt")
-  hru <- st_make_valid(st_transform(st_read(hru_shp_file), crs = "+proj=longlat +datum=WGS84 +no_defs +type=crs"))[,HRU_ID]
-  boundary <- ms_simplify(st_cast(st_simplify(st_union(hru),dTolerance = sum(area(as_Spatial(hru)))/1e6/20),"POLYGON"),0.99)
-  if(!is.null(lat) & !is.null(lon)) grid_size<-c(mean(diff(lon)),mean(diff(lat)))
-  buffered_boundary <- st_buffer(boundary, dist = max(grid_size)*1e5 / 2,singleSide = T)
+  hru<-st_transform(st_read(hru_shp_file),crs = "+proj=longlat +datum=WGS84 +no_defs +type=crs")
+  get_utm_zone <- function(lon) floor((lon + 180) / 6) + 1
+  lon <- mean(st_coordinates(st_centroid(hru))[, "X"])
+  utm_zone <- get_utm_zone(lon)
+  epsg_utm <- 32600 + utm_zone
+  hru_projected <- st_transform(hru, epsg_utm)
+  hru_valid <- st_make_valid(hru_projected)
+  hru_simplified <- st_simplify(hru_valid, preserveTopology = TRUE, dTolerance = 100)
+  hru_valid <- st_make_valid(hru_simplified)
+  hru_union <- st_union(st_geometry(hru_valid))
+  hru_buffer <- st_buffer(hru_union, dist = max(grid_size)*1e5 / 1.9 ,singleSide = T)
+  hru_buffer_sf <- st_sf(geometry = hru_buffer)
+  buffered_boundary <- st_transform(hru_buffer_sf, 4326)
+  
   if(!is.null(lat) & !is.null(lon))
   {
     xmn<-min(lon)-abs(mean(diff(lon)))/2
@@ -93,7 +104,7 @@ daymet2Raven_nc<-function(hru_shp_file,
   missing_leap_days<-which(is.na(match(time_list_complete,time_list)))
   if(length(missing_leap_days)>0)
   {
-    for(j in 1:1:nrow(locations))
+    for(j in 1:nrow(locations))
     {
         tmin<-tmin_list[[j]]
         tmax<-tmax_list[[j]]
@@ -148,6 +159,7 @@ daymet2Raven_nc<-function(hru_shp_file,
   grid_hru<-as_Spatial(st_intersection(st_as_sf(grid_cells),hru))
   grid_hru$area<-area(grid_hru)
   weight_data<-grid_hru@data
+  weight_data<-weight_data[,c(HRU_ID,"Cell_ID","area")]
   hru_id<- unique(weight_data [,HRU_ID])
   weight_data$weight<-NA
   for(i in 1:length(hru_id))
@@ -160,7 +172,7 @@ daymet2Raven_nc<-function(hru_shp_file,
   L2<-sprintf(":NumberHRUs\t%s",length(unique(weight_data$HRU_ID)))
   L3<-sprintf(":NumberGridCells\t%s",nrow(grid_cells))
   L4<-"# [HRU ID]\t[Cell #]\t[w_kl]"
-  Lweights<-apply(weight_data[,c(2,1,3)],1,paste,collapse="\t")
+  Lweights<-apply(weight_data,1,paste,collapse="\t")
   Lend<-":EndGridWeights"
   weights_mat_data<-c(L1,L2,L3,L4,Lweights,Lend)
   writeLines(weights_mat_data,grid_weight_file)
