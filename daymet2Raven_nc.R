@@ -21,7 +21,9 @@ daymet2Raven_nc<-function(hru_shp_file,
   if(!dir.exists(outdir)) dir.create(outdir)
   nc_file<-file.path(outdir,"RavenInput.nc")
   grid_weight_file<-file.path(outdir,"weights.txt")
-  plot_file<-file.path(outdir,"plot.pdf")
+  plot_prcp<-file.path(outdir,"prcp.pdf")
+  plot_tmin<-file.path(outdir,"tmin.pdf")
+  plot_tmax<-file.path(outdir,"tmax.pdf")
   grid_file<-file.path(outdir,"grids_polygons.shp")
   grid_file_json<-file.path(outdir,"grids_polygons.json")
   rvt_file<-file.path(outdir,"model.rvt")
@@ -209,40 +211,34 @@ daymet2Raven_nc<-function(hru_shp_file,
   }
   writeLines(paste(rvt,collapse = "\n"), con = rvt_file)
   writeLines(text = capture.output(nc),con = nc_content_file)
-  nc_close(nc)
   st_write(st_as_sf(grid_cells), dsn=grid_file,  driver="ESRI Shapefile", delete_layer = TRUE)
   if(file.exists(grid_file_json)) file.remove(grid_file_json)
   st_write(st_as_sf(grid_cells), dsn=grid_file_json, driver="GeoJSON")
   if(plot)
   {
-    pdf(file = plot_file)
-    plot(grid_cells,col="lightgrey")
-    if(nrow(grid_cells)<500)
-    {
-      points(rasterToPoints(r)[,1:2],pch=19,cex=0.5,col="red")
-      text(x=coordinates(r)[,1],y=coordinates(r)[,2],labels=grid_cells$Cell_ID,col="white",cex=0.6)
-      legend("topleft",
-             legend = c("grid","HRU","centroid"),
-             pch=c(4,4,19),
-             col=c("black","lightgrey","red"),
-             cex=c(.7,.7,.7),
-             bty="n")
-    }
-    plot(grid_cells[grid_cells$Cell_ID %in% unique(weight_data[,1]),],add=T,col="darkgrey")
-    plot(hru,col = rgb(0.7, 0.5, 0.5, 0.5), border = "white", lwd = 0.1,add=T)
-    x_range <- par()$usr[1:2]
-    y_range <- par()$usr[3:4]
-    x_scale <- diff(x_range) / 5
-    y_scale <- diff(y_range) / 5
-    ruler_x <- seq(x_range[1], x_range[2], by = x_scale)
-    ruler_y <- seq(y_range[1], y_range[2], by = y_scale)
-    axis(1, at = ruler_x, labels = FALSE, tck = -0.02)
-    axis(2, at = ruler_y, labels = FALSE, tck = -0.02)
-    mtext(round(ruler_x, 1), side = 1, at = ruler_x, line = 1, cex = 0.7,las=2)
-    mtext(round(ruler_y, 1), side = 2, at = ruler_y, line = 1, cex = 0.7,las=2)
-    abline(v=ruler_x,col="green",lty=2)
-    abline(h=ruler_y,col="green",lty=2)
+    prcp<-tmin<-tmax<-r
+    prcp[]<-apply(ncvar_get(nc,"prcp"),c(1,2),mean)*365.25
+    tmin[]<-apply(ncvar_get(nc,"tmin"),c(1,2),mean)
+    tmax[]<-apply(ncvar_get(nc,"tmax"),c(1,2),mean)
+    pdf(file = plot_prcp)
+    plot(prcp,main="Precipitation [mm/year]",xlab="lon [degrees_east]",ylab="lat [degrees_north]")
+    points(rasterToPoints(r)[,1:2],pch=19,cex=0.5,col="red")
+    plot(grid_cells[grid_cells$Cell_ID %in% unique(weight_data$Cell_ID),],add = TRUE, col = NA,lwd=2)
+    plot(buffered_boundary, border = "white", lwd = 2,add=T)
+    dev.off()
+    pdf(file = plot_tmin)
+    plot(tmin,main="Minimum Temperature [degC]",xlab="lon [degrees_east]",ylab="lat [degrees_north]")
+    points(rasterToPoints(r)[,1:2],pch=19,cex=0.5,col="red")
+    plot(grid_cells[grid_cells$Cell_ID %in% unique(weight_data$Cell_ID),],add = TRUE, col = NA,lwd=2)
+    plot(buffered_boundary, border = "white", lwd = 2,add=T)
+    dev.off()
+    pdf(file = plot_tmax)
+    plot(tmax,main="Maximum Temperature [degC]",xlab="lon [degrees_east]",ylab="lat [degrees_north]")
+    points(rasterToPoints(r)[,1:2],pch=19,cex=0.5,col="red")
+    plot(grid_cells[grid_cells$Cell_ID %in% unique(weight_data$Cell_ID),],add = TRUE, col = NA,lwd=2)
+    plot(buffered_boundary, border = "white", lwd = 2,add=T)
     dev.off()
   }
+  nc_close(nc)
   cat("Done!")
 }
