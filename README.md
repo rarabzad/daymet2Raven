@@ -139,9 +139,9 @@ Daymet provides high-resolution, gridded estimates of daily weather parameters a
 
 | Variable | Description                       | Units             |
 |----------|-----------------------------------|-------------------|
-| `prcp`   | Daily total precipitation         | mm/day            |
-| `tmin`   | Daily minimum 2-m air temperature | °C                |
-| `tmax`   | Daily maximum 2-m air temperature | °C                |
+| **`prcp`**   | Daily total precipitation         | mm/day            |
+| **`tmin`**   | Daily minimum 2-m air temperature | °C                |
+| **`tmax`**   | Daily maximum 2-m air temperature | °C                |
 | `srad`   | Daily incident shortwave radiation| W/m²              |
 | `vp`     | Daily average vapor pressure      | Pa                |
 | `dayl`   | Day length                        | seconds           |
