@@ -28,13 +28,12 @@ daymet2Raven_nc<-function(hru_shp_file,
   grid_file_json<-file.path(outdir,"grids_polygons.json")
   rvt_file<-file.path(outdir,"model.rvt")
   nc_content_file<-file.path(outdir,"nc_file_content.txt")
-  hru<-st_transform(st_read(hru_shp_file),crs = "+proj=longlat +datum=WGS84 +no_defs +type=crs")
+  hru<-st_make_valid(st_transform(st_read(hru_shp_file),crs = "+proj=longlat +datum=WGS84 +no_defs +type=crs"))
   get_utm_zone <- function(lon) floor((lon + 180) / 6) + 1
   lon <- mean(st_coordinates(st_centroid(hru))[, "X"])
   utm_zone <- get_utm_zone(lon)
   epsg_utm <- 32600 + utm_zone
-  hru_projected <- st_transform(hru, epsg_utm)
-  hru_valid <- st_make_valid(hru_projected)
+  hru_valid<-hru_projected <- st_transform(hru, epsg_utm)
   hru_simplified <- st_simplify(hru_valid, preserveTopology = TRUE, dTolerance = 100)
   hru_valid <- st_make_valid(hru_simplified)
   hru_union <- st_union(st_geometry(hru_valid))
