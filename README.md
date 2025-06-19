@@ -25,19 +25,27 @@ NetCDF organizes data into variables and dimensions. Each variable (e.g., temper
 
 Below is a schematic illustration of a spatiotemporal dataset stored in a 3D NetCDF cube:
 
-↑
-      │
- T(3) │ ┌─────────────┐
-      │ │ Timestep 3 │
-      │ └─────────────┘
-      │ ┌─────────────┐
- T(2) │ │ Timestep 2 │
-      │ └─────────────┘
-      │ ┌─────────────┐
- T(1) │ │ Timestep 1 │
-      │ └─────────────┘
-      └────────────────────→
-        Longitude → (X)
+                              ↑ Time
+                     +---+---+---+---+
+                    / * / * / * / * /|
+                   +---+---+---+---+ |
+                  / * / * / * / * /| |
+                 +---+---+---+---+ | |
+                / * / * / * / * /| | |
+               +---+---+---+---+ | | |
+              / * / * / * / * /| | | |
+             +---+---+---+---+ | | | +
+            | * | * | * | * | | | | +----→ Lon
+            |   |   |   |   | | | |/
+            |   |   |   |   | | |/
+            +---+---+---+---+ | +
+            | * | * | * | * | | |/
+            +---+---+---+---+ +
+            | * | * | * | * | |/
+            +---+---+---+---+
+            | * | * | * | * |/
+            +---+---+---+---+
+         ↑ Lat
 
 Each "slice" is a 2D grid: Latitude × Longitude
 
