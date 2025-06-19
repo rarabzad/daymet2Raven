@@ -67,17 +67,17 @@ A NetCDF file typically contains:
 
 Here’s an example of what a NetCDF structure might look like:
 
-netcdf example { dimensions: time = 12 ; lat = 180 ; lon = 360 ;
+netcdf example { dimensions: time = 12 ; rlat = 180 ; rlon = 360 ;
 
-variables: float temperature(time, lat, lon) ; temperature:units = "Kelvin" ; temperature:long_name = "Monthly Mean Temperature" ;
+variables: float temperature(time, rlat, rlon) ; temperature:units = "Kelvin" ; temperature:long_name = "Monthly Mean Temperature" ;
 
-float precipitation(time, lat, lon) ; precipitation:units = "mm" ; precipitation:long_name = "Monthly Total Precipitation" ;
+float precipitation(time, rlat, rlon) ; precipitation:units = "mm" ; precipitation:long_name = "Monthly Total Precipitation" ;
 
 double time(time) ; time:units = "days since 2000-01-01" ;
 
-float lat(lat) ; lat:units = "degrees_north" ;
+float lat(rlat) ; lat:units = "degrees_north" ;
 
-float lon(lon) ; lon:units = "degrees_east" ; }
+float lon(rlat,rlon) ; lon:units = "degrees_east" ; }
 
 ---
 
