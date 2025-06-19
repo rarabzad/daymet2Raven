@@ -2,6 +2,44 @@
 
 The `daymet2Raven_nc` function is designed to process spatial climate data from the Daymet database and prepare it for use in the Raven Hydrological Modelling Framework. It generates a NetCDF file and grid weight information, integrating spatial data from a shapefile with gridded climatic variables.
 
+# 📡 Daymet Dataset Overview
+
+Daymet provides high-resolution, gridded estimates of daily weather parameters across North America. These data are widely used in hydrological, ecological, and climate modeling.
+
+---
+
+## 🌍 Dataset Description
+
+- **Source:** [ORNL DAAC – Daymet](https://daymet.ornl.gov/)
+- **Coverage:** North America (including Hawaii and Puerto Rico)
+- **Spatial Resolution:** 1 km x 1 km
+- **Temporal Coverage:** 1980 – Present (updates annually)
+- **Temporal Resolution:** Daily
+- **Projection:** Lambert Conformal Conic (LCC)
+
+### 📦 Available Variables
+
+| Variable | Description                       | Units             |
+|----------|-----------------------------------|-------------------|
+| `prcp`   | Daily total precipitation         | mm/day            |
+| `tmin`   | Daily minimum 2-m air temperature | °C                |
+| `tmax`   | Daily maximum 2-m air temperature | °C                |
+| `srad`   | Daily incident shortwave radiation| W/m²              |
+| `vp`     | Daily average vapor pressure      | Pa                |
+| `dayl`   | Day length                        | seconds           |
+| `swe`    | Snow water equivalent (Alaska only)| kg/m²            |
+
+---
+
+## 📁 Data Access Methods
+
+### 1. Web Interface
+- Browse and download from: [https://daymet.ornl.gov/](https://daymet.ornl.gov/)
+
+### 2. THREDDS / OPeNDAP
+- Use NetCDF via remote access:  
+  `https://thredds.daac.ornl.gov/thredds/catalog/ornldaac/Daymet/catalog.html`
+
 ## Function Overview
 
 **Purpose:** Download Daymet climate data for specified locations, generate spatial data in NetCDF format, and create grid weight files necessary for hydrological modeling in Raven.
