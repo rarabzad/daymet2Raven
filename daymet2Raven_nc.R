@@ -224,22 +224,23 @@ daymet2Raven_nc<-function(hru_shp_file,
     plot(prcp,main="Precipitation [mm/year]",xlab="lon [degrees_east]",ylab="lat [degrees_north]")
     points(rasterToPoints(r)[,1:2],pch=19,cex=0.5,col="red")
     plot(grid_cells[grid_cells$Cell_ID %in% unique(weight_data$Cell_ID),],add = TRUE, col = NA,lwd=2)
-    plot(hru, border = "white", lwd = 2,add=T)
+    plot(hru, border = "white", lwd = 2,add=T,col=NA)
     dev.off()
     pdf(file = plot_tmin)
     plot(tmin,main="Minimum Temperature [degC]",xlab="lon [degrees_east]",ylab="lat [degrees_north]")
     points(rasterToPoints(r)[,1:2],pch=19,cex=0.5,col="red")
     plot(grid_cells[grid_cells$Cell_ID %in% unique(weight_data$Cell_ID),],add = TRUE, col = NA,lwd=2)
-    plot(hru, border = "white", lwd = 2,add=T)
+    plot(hru, border = "white", lwd = 2,add=T,col=NA)
     dev.off()
     pdf(file = plot_tmax)
     plot(tmax,main="Maximum Temperature [degC]",xlab="lon [degrees_east]",ylab="lat [degrees_north]")
     points(rasterToPoints(r)[,1:2],pch=19,cex=0.5,col="red")
     plot(grid_cells[grid_cells$Cell_ID %in% unique(weight_data$Cell_ID),],add = TRUE, col = NA,lwd=2)
-    plot(hru, border = "white", lwd = 2,add=T)
+    plot(hru, border = "white", lwd = 2,add=T,col=NA)
     dev.off()
   }
   nc_close(nc)
   cat("Done!")
 }
+
 
