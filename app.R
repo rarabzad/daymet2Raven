@@ -45,6 +45,11 @@ ui <- fluidPage(
         tags$a(href = "https://github.com/rarabzad/daymet2Raven/tree/main",
                "click here", target = "_blank")
       ),
+      fileInput("hru_zip",
+		      label_with_help("help_hru",
+				                  "Upload a zipped shapefile",
+				                  "Upload a zipped HRU/subbasin/basin shapefile (.zip) containing .shp/.dbf/.shx/.prj etc."),
+      		accept = ".zip"),
       dateInput(
         "start_date",
         label_with_help("help_start_date", "Start Date", "Start date for data (YYYY-MM-DD)."),
@@ -431,4 +436,5 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui, server)
+
 
