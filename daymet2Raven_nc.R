@@ -1,3 +1,4 @@
+
 daymet2Raven_nc<-function(hru_shp_file,
                           start_date,
                           end_date,
@@ -242,5 +243,6 @@ daymet2Raven_nc<-function(hru_shp_file,
   nc_close(nc)
   cat("Done!")
 }
+
 
 
