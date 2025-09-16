@@ -257,7 +257,7 @@ daymet2Raven_nc(hru_shp_file = hru_shp_file,
 ```
 
 ## Live demo
-(daymet2ravn)[https://raven-daymet2raven.share.connect.posit.cloud]
+[daymet2ravn](https://raven-daymet2raven.share.connect.posit.cloud)
 
 ## Author
 
