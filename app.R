@@ -45,17 +45,18 @@ ui <- fluidPage(
         tags$a(href = "https://github.com/rarabzad/daymet2Raven/tree/main",
                "click here", target = "_blank")
       ),
-      fileInput("hru_zip", label_with_help("help_hru", "Upload a zipped shapefile", "Upload a zipped HRU/subbasin/basin shapefile (.zip) containing .shp/.dbf/.shx/.prj etc."), accept = ".zip"),
       dateInput(
         "start_date",
         label_with_help("help_start_date", "Start Date", "Start date for data (YYYY-MM-DD)."),
         value = as.Date(paste0(as.numeric(format(Sys.Date(), "%Y"))-1,"-01-01")),
+        min = as.Date("1980-01-01"),            # <-- minimum allowed date
         max = as.Date(paste0(as.numeric(format(Sys.Date(), "%Y"))-1,"-12-31"))
       ),
       dateInput(
         "end_date",
         label_with_help("help_end_date", "End Date", "End date for data (YYYY-MM-DD)."),
         value = as.Date(paste0(as.numeric(format(Sys.Date(), "%Y"))-1,"-12-31")),
+        min = as.Date("1980-01-01"),            # <-- minimum allowed date
         max = as.Date(paste0(as.numeric(format(Sys.Date(), "%Y"))-1,"-12-31"))
       ),
       textInput("grid_size_txt", label_with_help("help_grid_size", "NetCDF Cell Size", "Grid resolution in degrees (default 0.1)."), placeholder = "e.g. 0.1"),
@@ -430,3 +431,4 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui, server)
+
