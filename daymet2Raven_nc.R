@@ -215,6 +215,7 @@ daymet2Raven_nc<-function(hru_shp_file,
   st_write(st_as_sf(grid_cells), dsn=grid_file_json, driver="GeoJSON")
   if(plot)
   {
+    hru<-st_transform(hru,4326)
     prcp<-tmin<-tmax<-r
     prcp[]<-apply(ncvar_get(nc,"prcp"),c(1,2),mean)*365.25
     tmin[]<-apply(ncvar_get(nc,"tmin"),c(1,2),mean)
@@ -223,21 +224,22 @@ daymet2Raven_nc<-function(hru_shp_file,
     plot(prcp,main="Precipitation [mm/year]",xlab="lon [degrees_east]",ylab="lat [degrees_north]")
     points(rasterToPoints(r)[,1:2],pch=19,cex=0.5,col="red")
     plot(grid_cells[grid_cells$Cell_ID %in% unique(weight_data$Cell_ID),],add = TRUE, col = NA,lwd=2)
-    plot(buffered_boundary, border = "white", lwd = 2,add=T)
+    plot(hru, border = "white", lwd = 2,add=T)
     dev.off()
     pdf(file = plot_tmin)
     plot(tmin,main="Minimum Temperature [degC]",xlab="lon [degrees_east]",ylab="lat [degrees_north]")
     points(rasterToPoints(r)[,1:2],pch=19,cex=0.5,col="red")
     plot(grid_cells[grid_cells$Cell_ID %in% unique(weight_data$Cell_ID),],add = TRUE, col = NA,lwd=2)
-    plot(buffered_boundary, border = "white", lwd = 2,add=T)
+    plot(hru, border = "white", lwd = 2,add=T)
     dev.off()
     pdf(file = plot_tmax)
     plot(tmax,main="Maximum Temperature [degC]",xlab="lon [degrees_east]",ylab="lat [degrees_north]")
     points(rasterToPoints(r)[,1:2],pch=19,cex=0.5,col="red")
     plot(grid_cells[grid_cells$Cell_ID %in% unique(weight_data$Cell_ID),],add = TRUE, col = NA,lwd=2)
-    plot(buffered_boundary, border = "white", lwd = 2,add=T)
+    plot(hru, border = "white", lwd = 2,add=T)
     dev.off()
   }
   nc_close(nc)
   cat("Done!")
 }
+
